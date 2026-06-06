@@ -18,6 +18,7 @@ export function TenantProvider({ children }) {
     fetch(`/api/tenants/${slug}`)
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
+        if (!data || !data.name) return
         setTenant(data)
         setLoading(false)
       })

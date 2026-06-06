@@ -387,7 +387,7 @@ export default function Admin() {
                 </tr>
               </thead>
               <tbody>
-                {lenders.map((l) => (
+                {(lenders || []).map((l) => (
                   <tr key={l.id}>
                     <td style={s.td}>{l.name}</td>
                     <td style={s.td}>{l.email}</td>
@@ -427,7 +427,7 @@ export default function Admin() {
             <button style={s.addBtn} onClick={openCreateTenant}>+ Nueva marca</button>
             {creating && <p style={{ color: 'var(--muted)', marginBottom: 16 }}>Creando...</p>}
             <div style={s.cards}>
-              {tenants.map((t) => (
+              {(tenants || []).map((t) => (
                 <div key={t.slug} style={s.card}>
                   <div style={{ ...s.cardName, color: t.color }}>{t.name}</div>
                   {t.modality && (

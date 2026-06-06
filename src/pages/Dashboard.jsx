@@ -235,6 +235,7 @@ export default function Dashboard() {
       })
       if (res.ok) {
         const data = await res.json()
+        if (!data) return
         setSubscription(data)
       }
     } catch {
