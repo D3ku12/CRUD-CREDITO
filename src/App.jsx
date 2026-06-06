@@ -1,26 +1,36 @@
-import Navbar from './components/Navbar'
-import Hero from './components/Hero'
-import HowItWorks from './components/HowItWorks'
-import Plans from './components/Plans'
-import Contact from './components/Contact'
-import Footer from './components/Footer'
-import useScrollReveal from './hooks/useScrollReveal'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { TenantProvider } from './contexts/TenantContext'
+import ProtectedRoute from './components/ProtectedRoute'
+import Admin from './pages/Admin'
+import Dashboard from './pages/Dashboard'
+import Login from './pages/Login'
+import Landing from './pages/Landing'
 
-function App() {
-  useScrollReveal()
-
+export default function App() {
   return (
-    <>
-      <Navbar />
-      <main>
-        <Hero />
-        <HowItWorks />
-        <Plans />
-        <Contact />
-      </main>
-      <Footer />
-    </>
+    <BrowserRouter>
+      <TenantProvider>
+        <Routes>
+          <Route path="/" element={<Landing />} />
+          <Route path="/login" element={<Login />} />
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute role="superadmin">
+                <Admin />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute role="prestamista">
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+        </Routes>
+      </TenantProvider>
+    </BrowserRouter>
   )
 }
-
-export default App

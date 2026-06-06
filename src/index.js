@@ -6,12 +6,14 @@ const fs = require('fs');
 
 const contactRoutes = require('./routes/contact');
 const tenantsRoutes = require('./routes/tenants');
+const authRoutes = require('./routes/auth');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 
+app.use('/api/auth', authRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/api/tenants', tenantsRoutes);
 

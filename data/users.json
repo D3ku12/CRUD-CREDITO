@@ -1,0 +1,12 @@
+[
+  {
+    "id": "1",
+    "email": "admin@crediconfianza.com",
+    "password": "$2a$10$xuYg8kpJVbIqGH/JaZgMiOZJKpBHdtehAdKeMlcXAmn5YzFfpdDGa",
+    "role": "superadmin",
+    "name": "Admin",
+    "plan": null,
+    "active": true,
+    "createdAt": "2025-01-01"
+  }
+]
