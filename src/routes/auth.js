@@ -38,7 +38,7 @@ router.post('/login', (req, res) => {
     return res.status(403).json({ error: 'Cuenta desactivada' });
   }
 
-  const payload = { id: user.id, email: user.email, role: user.role, name: user.name };
+  const payload = { id: user.id, email: user.email, role: user.role, name: user.name, tenantSlug: user.tenantSlug };
   const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '8h' });
 
   res.json({ token, user: payload });

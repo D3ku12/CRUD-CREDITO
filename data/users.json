@@ -6,7 +6,39 @@
     "role": "superadmin",
     "name": "Admin",
     "plan": null,
+    "planId": null,
+    "estado": "inactivo",
+    "fechaVencimiento": null,
     "active": true,
-    "createdAt": "2025-01-01"
+    "createdAt": "2026-06-01",
+    "tenantSlug": null
+  },
+  {
+    "id": "2",
+    "email": "finanexpress@demo.com",
+    "password": "$2a$10$3E.WF0OVDKQb3XVHa6nuO.y.0OYtVusvnrVn7LY1nM4F/cqrnxgVy",
+    "role": "prestamista",
+    "name": "FinanExpress",
+    "plan": "Pro",
+    "planId": "pro",
+    "estado": "activo",
+    "fechaVencimiento": "2026-07-05",
+    "active": true,
+    "createdAt": "2026-06-05",
+    "tenantSlug": "finanexpress"
+  },
+  {
+    "id": "3",
+    "email": "creditofacil@demo.com",
+    "password": "$2a$10$3E.WF0OVDKQb3XVHa6nuO.y.0OYtVusvnrVn7LY1nM4F/cqrnxgVy",
+    "role": "prestamista",
+    "name": "CréditoFácil",
+    "plan": "Pro",
+    "planId": "pro",
+    "estado": "activo",
+    "fechaVencimiento": "2026-07-05",
+    "active": true,
+    "createdAt": "2026-06-05",
+    "tenantSlug": "creditofacil"
   }
 ]

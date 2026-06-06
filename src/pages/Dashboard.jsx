@@ -1,5 +1,50 @@
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import useAuth from '../hooks/useAuth'
+
+const PLANS = [
+  {
+    id: 'basico',
+    name: 'Básico',
+    price: '89.000',
+    amount: 8900000,
+    desc: 'Para negocios que inician su transformación digital',
+    featured: false,
+    features: ['Gestión de cartera', 'Cobro manual', 'Reportes básicos', '1 usuario'],
+  },
+  {
+    id: 'pro',
+    name: 'Pro',
+    price: '179.000',
+    amount: 17900000,
+    desc: 'La opción más elegida por asesores de crédito',
+    featured: true,
+    features: [
+      'Cobro automático WhatsApp',
+      'Cartera en tiempo real',
+      'Reportes avanzados',
+      '5 usuarios',
+      'Personalización de marca',
+      'Soporte prioritario',
+    ],
+  },
+  {
+    id: 'empresarial',
+    name: 'Empresarial',
+    price: '320.000',
+    amount: 32000000,
+    desc: 'Para organizaciones con múltiples asesores',
+    featured: false,
+    features: [
+      'Todo lo de Pro',
+      'Usuarios ilimitados',
+      'API de integración',
+      'Documentos PDF automáticos',
+      'Gerente de cuenta dedicado',
+      'Onboarding personalizado',
+    ],
+  },
+]
 
 const styles = {
   page: {
@@ -11,7 +56,7 @@ const styles = {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    maxWidth: 800,
+    maxWidth: 1100,
     margin: '0 auto 32px',
   },
   title: {
@@ -30,7 +75,7 @@ const styles = {
     cursor: 'pointer',
   },
   container: {
-    maxWidth: 800,
+    maxWidth: 1100,
     margin: '0 auto',
   },
   card: {
@@ -61,117 +106,174 @@ const styles = {
     color: 'var(--text)',
     fontWeight: 500,
   },
-  section: {
-    marginTop: 32,
-    padding: 32,
-    background: 'var(--bg2)',
-    borderRadius: 20,
-    border: '1px solid rgba(255,255,255,0.06)',
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: 700,
-    fontFamily: "'Outfit', sans-serif",
-    color: 'var(--text)',
-    marginBottom: 20,
-  },
-  field: {
-    marginBottom: 16,
-  },
-  label: {
-    display: 'block',
-    fontSize: 13,
-    fontWeight: 500,
-    color: 'var(--muted)',
-    marginBottom: 6,
-    letterSpacing: '0.5px',
-    textTransform: 'uppercase',
-  },
-  input: {
-    width: '100%',
-    padding: '10px 14px',
-    borderRadius: 10,
-    border: '1px solid rgba(255,255,255,0.08)',
-    background: 'rgba(255,255,255,0.04)',
-    color: 'var(--text)',
-    fontSize: 15,
-    outline: 'none',
-    boxSizing: 'border-box',
-  },
-  select: {
-    width: '100%',
-    padding: '10px 14px',
-    borderRadius: 10,
-    border: '1px solid rgba(255,255,255,0.08)',
-    background: 'rgba(255,255,255,0.04)',
-    color: 'var(--text)',
-    fontSize: 15,
-    outline: 'none',
-    cursor: 'pointer',
-  },
-  swatchRow: {
-    display: 'flex',
-    gap: 10,
-    marginTop: 4,
-  },
-  swatchBtn: (c, active) => ({
-    width: 32,
-    height: 32,
-    borderRadius: '50%',
-    border: active ? '3px solid var(--text)' : '3px solid transparent',
-    backgroundColor: c,
-    cursor: 'pointer',
-    transition: 'border-color 0.2s, transform 0.2s',
-    transform: active ? 'scale(1.15)' : 'scale(1)',
-  }),
-  saveBtn: {
-    padding: '12px 32px',
+  successBanner: {
+    padding: '16px 24px',
     borderRadius: 12,
+    background: 'rgba(29,158,117,0.12)',
+    border: '1px solid rgba(29,158,117,0.25)',
+    color: 'var(--primary)',
+    fontSize: 15,
+    fontWeight: 600,
+    textAlign: 'center',
+    marginBottom: 24,
+  },
+  grid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(3, 1fr)',
+    gap: 24,
+    alignItems: 'start',
+  },
+  planCard: (featured) => ({
+    padding: '32px 28px',
+    borderRadius: 20,
+    background: featured ? 'rgba(29,158,117,0.05)' : 'rgba(255,255,255,0.03)',
+    border: featured ? '2px solid var(--primary)' : '1px solid rgba(255,255,255,0.06)',
+    position: 'relative',
+  }),
+  badge: {
+    position: 'absolute',
+    top: -12,
+    left: '50%',
+    transform: 'translateX(-50%)',
+    padding: '4px 18px',
+    borderRadius: 20,
     background: 'var(--primary)',
     color: '#fff',
+    fontSize: 12,
+    fontWeight: 700,
+    letterSpacing: '0.5px',
+    textTransform: 'uppercase',
+    whiteSpace: 'nowrap',
+  },
+  planName: {
+    fontSize: 20,
+    fontWeight: 700,
+    fontFamily: "'Outfit', sans-serif",
+    marginBottom: 4,
+    color: 'var(--text)',
+  },
+  price: {
+    fontSize: 40,
+    fontWeight: 800,
+    fontFamily: "'Outfit', sans-serif",
+    color: 'var(--primary)',
+    marginBottom: 4,
+  },
+  priceLabel: {
+    fontSize: 14,
+    color: 'var(--muted)',
+    marginBottom: 20,
+  },
+  desc: {
+    fontSize: 14,
+    color: 'var(--muted)',
+    marginBottom: 24,
+    lineHeight: 1.5,
+  },
+  featureList: {
+    listStyle: 'none',
+    padding: 0,
+    margin: '0 0 28px',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 10,
+  },
+  featureItem: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 10,
+    fontSize: 14,
+    color: 'var(--text)',
+  },
+  check: {
+    width: 18,
+    height: 18,
+    borderRadius: '50%',
+    background: 'rgba(29,158,117,0.15)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+    color: 'var(--primary)',
+    fontSize: 12,
+    fontWeight: 700,
+  },
+  btn: (featured, disabled) => ({
+    width: '100%',
+    padding: '12px 0',
+    borderRadius: 12,
+    background: disabled ? 'rgba(255,255,255,0.03)' : (featured ? 'var(--primary)' : 'rgba(255,255,255,0.06)'),
+    color: disabled ? 'var(--muted)' : (featured ? '#fff' : 'var(--text)'),
     fontSize: 15,
     fontWeight: 600,
     border: 'none',
-    cursor: 'pointer',
-    marginTop: 8,
-  },
-  linkBtn: {
-    display: 'inline-block',
-    padding: '12px 32px',
-    borderRadius: 12,
-    background: 'rgba(255,255,255,0.06)',
-    color: 'var(--text)',
-    fontSize: 15,
-    fontWeight: 600,
-    border: '1px solid rgba(255,255,255,0.08)',
-    cursor: 'pointer',
-    textDecoration: 'none',
-    marginTop: 8,
+    cursor: disabled ? 'not-allowed' : 'pointer',
+    transition: 'opacity 0.2s',
+  }),
+  footnote: {
+    textAlign: 'center',
+    fontSize: 13,
+    color: 'var(--muted)',
+    marginTop: 32,
   },
 }
 
-const COLORS = ['#1D9E75', '#185FA5', '#BA7517', '#993556', '#534AB7']
-
 export default function Dashboard() {
   const { user, logout } = useAuth()
-  const [brandName, setBrandName] = useState('')
-  const [brandColor, setBrandColor] = useState(COLORS[0])
-  const [saved, setSaved] = useState(false)
+  const [searchParams] = useSearchParams()
+  const [subscription, setSubscription] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [subscribing, setSubscribing] = useState(null)
+  const pagoExitoso = searchParams.get('pago') === 'exitoso'
 
-  function handleSaveBrand(e) {
-    e.preventDefault()
-    localStorage.setItem('cc_brand', JSON.stringify({ name: brandName, color: brandColor }))
-    setSaved(true)
-    setTimeout(() => setSaved(false), 2000)
+  const token = localStorage.getItem('cc_token')
+
+  const fetchStatus = useCallback(async () => {
+    try {
+      const res = await fetch('/api/payments/status', {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setSubscription(data)
+      }
+    } catch {
+      // ignore
+    } finally {
+      setLoading(false)
+    }
+  }, [token])
+
+  useEffect(() => {
+    fetchStatus()
+  }, [fetchStatus])
+
+  const handleSubscribe = async (planId) => {
+    setSubscribing(planId)
+    try {
+      const res = await fetch('/api/payments/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ planId }),
+      })
+      const data = await res.json()
+      if (res.ok && data.checkoutUrl) {
+        window.location.href = data.checkoutUrl
+      } else {
+        alert(data.error || 'Error al crear el pago')
+      }
+    } catch {
+      alert('Error de conexión')
+    } finally {
+      setSubscribing(null)
+    }
   }
 
   if (!user) return null
-
-  const nextPayment = new Date()
-  nextPayment.setDate(nextPayment.getDate() + 30)
-  const nextPaymentStr = nextPayment.toLocaleDateString('es-CO', {
-    year: 'numeric', month: 'long', day: 'numeric',
-  })
+  const hasPlan = subscription?.plan && subscription?.estado === 'activo'
 
   return (
     <div style={styles.page}>
@@ -181,66 +283,72 @@ export default function Dashboard() {
       </div>
 
       <div style={styles.container}>
-        <div style={styles.card}>
-          <h2 style={styles.cardTitle}>Resumen de tu cuenta</h2>
-          <div style={styles.infoRow}>
-            <span style={styles.infoLabel}>Negocio</span>
-            <span style={styles.infoValue}>{user.name}</span>
+        {pagoExitoso && (
+          <div style={styles.successBanner}>
+            ¡Pago exitoso! Tu suscripción ha sido activada.
           </div>
-          <div style={styles.infoRow}>
-            <span style={styles.infoLabel}>Plan activo</span>
-            <span style={styles.infoValue}>Pro</span>
-          </div>
-          <div style={styles.infoRow}>
-            <span style={styles.infoLabel}>Estado</span>
-            <span style={{ ...styles.infoValue, color: 'var(--primary)' }}>Activo</span>
-          </div>
-          <div style={styles.infoRow}>
-            <span style={styles.infoLabel}>Próximo pago</span>
-            <span style={styles.infoValue}>{nextPaymentStr}</span>
-          </div>
-        </div>
+        )}
 
-        <div style={styles.section}>
-          <h2 style={styles.sectionTitle}>Configurar mi marca</h2>
-          <form onSubmit={handleSaveBrand}>
-            <div style={styles.field}>
-              <label style={styles.label}>Nombre del negocio</label>
-              <input
-                style={styles.input}
-                value={brandName}
-                onChange={(e) => setBrandName(e.target.value)}
-                placeholder="Ej: Mi Crédito"
-              />
+        {loading ? (
+          <p style={{ textAlign: 'center', color: 'var(--muted)', padding: 48 }}>
+            Cargando...
+          </p>
+        ) : hasPlan ? (
+          <div style={styles.card}>
+            <h2 style={styles.cardTitle}>Resumen de tu suscripción</h2>
+            <div style={styles.infoRow}>
+              <span style={styles.infoLabel}>Plan</span>
+              <span style={styles.infoValue}>{subscription.plan}</span>
             </div>
-            <div style={styles.field}>
-              <label style={styles.label}>Color de marca</label>
-              <div style={styles.swatchRow}>
-                {COLORS.map((c) => (
+            <div style={styles.infoRow}>
+              <span style={styles.infoLabel}>Estado</span>
+              <span style={{ ...styles.infoValue, color: 'var(--primary)' }}>
+                {subscription.estado}
+              </span>
+            </div>
+            <div style={styles.infoRow}>
+              <span style={styles.infoLabel}>Vencimiento</span>
+              <span style={styles.infoValue}>{subscription.fechaVencimiento}</span>
+            </div>
+            <div style={styles.infoRow}>
+              <span style={styles.infoLabel}>Días restantes</span>
+              <span style={styles.infoValue}>{subscription.diasRestantes} días</span>
+            </div>
+          </div>
+        ) : (
+          <>
+            <h2 style={{ ...styles.cardTitle, textAlign: 'center', marginBottom: 32 }}>
+              Suscríbete a un plan
+            </h2>
+            <div style={styles.grid}>
+              {PLANS.map((plan) => (
+                <div key={plan.id} style={styles.planCard(plan.featured)}>
+                  {plan.featured && <div style={styles.badge}>Más popular</div>}
+                  <h3 style={styles.planName}>{plan.name}</h3>
+                  <div style={styles.price}>${plan.price}</div>
+                  <div style={styles.priceLabel}>/mes</div>
+                  <p style={styles.desc}>{plan.desc}</p>
+                  <ul style={styles.featureList}>
+                    {plan.features.map((f, j) => (
+                      <li key={j} style={styles.featureItem}>
+                        <span style={styles.check}>✓</span>
+                        {f}
+                      </li>
+                    ))}
+                  </ul>
                   <button
-                    key={c}
-                    type="button"
-                    style={styles.swatchBtn(c, brandColor === c)}
-                    onClick={() => setBrandColor(c)}
-                    aria-label={c}
-                  />
-                ))}
-              </div>
+                    style={styles.btn(plan.featured, subscribing === plan.id)}
+                    onClick={() => handleSubscribe(plan.id)}
+                    disabled={subscribing === plan.id}
+                  >
+                    {subscribing === plan.id ? 'Procesando...' : 'Suscribirme'}
+                  </button>
+                </div>
+              ))}
             </div>
-            <button type="submit" style={styles.saveBtn}>
-              {saved ? '✓ Guardado' : 'Guardar'}
-            </button>
-          </form>
-        </div>
-
-        <a
-          href="https://credialiado.digital"
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{ ...styles.linkBtn, display: 'inline-block', marginTop: 16 }}
-        >
-          Ir a Crediconfianza
-        </a>
+            <p style={styles.footnote}>Precios en COP</p>
+          </>
+        )}
       </div>
     </div>
   )

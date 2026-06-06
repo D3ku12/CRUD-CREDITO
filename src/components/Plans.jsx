@@ -1,3 +1,6 @@
+import { useNavigate } from 'react-router-dom'
+import useAuth from '../hooks/useAuth'
+
 const PLANS = [
   {
     name: 'Básico',
@@ -98,6 +101,7 @@ const styles = {
     fontWeight: 700,
     fontFamily: "'Outfit', sans-serif",
     marginBottom: 4,
+    color: 'var(--text)',
   },
   price: {
     fontSize: 40,
@@ -166,8 +170,15 @@ const styles = {
 }
 
 export default function Plans() {
-  const scrollToContact = () => {
-    document.getElementById('contacto')?.scrollIntoView({ behavior: 'smooth' })
+  const navigate = useNavigate()
+  const { isAuthenticated } = useAuth()
+
+  const handlePlanClick = () => {
+    if (isAuthenticated) {
+      navigate('/dashboard')
+    } else {
+      navigate('/login')
+    }
   }
 
   return (
@@ -194,8 +205,8 @@ export default function Plans() {
                   </li>
                 ))}
               </ul>
-              <button style={styles.btn(plan.featured)} onClick={scrollToContact}>
-                Elegir plan
+              <button style={styles.btn(plan.featured)} onClick={handlePlanClick}>
+                Suscribirme
               </button>
             </div>
           ))}
