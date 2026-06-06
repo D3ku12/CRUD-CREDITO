@@ -118,7 +118,7 @@ export default function WhiteLabelDemo() {
       const slug = nombre.toLowerCase().replace(/\s+/g, '-')
       fetch(`/api/tenants/${slug}`)
         .then(res => {
-          if (!res.ok) throw new Error()
+          if (!res.ok) throw new Error('Tenant no encontrado en autocompletado')
           return res.json()
         })
         .then(data => {

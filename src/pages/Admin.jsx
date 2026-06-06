@@ -280,7 +280,12 @@ export default function Admin() {
   }, [user])
 
   useEffect(() => {
-    const stored = JSON.parse(localStorage.getItem('cc_lenders') || '[]')
+    let stored = []
+    try {
+      stored = JSON.parse(localStorage.getItem('cc_lenders') || '[]')
+    } catch {
+      stored = []
+    }
     setLenders(stored)
   }, [])
 
