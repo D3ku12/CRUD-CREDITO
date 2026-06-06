@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { Routes, Route } from 'react-router-dom'
 import { TenantProvider } from './contexts/TenantContext'
 import ProtectedRoute from './components/ProtectedRoute'
 import Admin from './pages/Admin'
@@ -9,9 +9,8 @@ import Landing from './pages/Landing'
 export default function App() {
   console.log('[App] rendering')
   return (
-    <BrowserRouter>
-      <TenantProvider>
-        <Routes>
+    <TenantProvider>
+      <Routes>
           <Route path="/" element={<Landing />} />
           <Route path="/login" element={<Login />} />
           <Route
@@ -30,8 +29,7 @@ export default function App() {
               </ProtectedRoute>
             }
           />
-        </Routes>
-      </TenantProvider>
-    </BrowserRouter>
+      </Routes>
+    </TenantProvider>
   )
 }
