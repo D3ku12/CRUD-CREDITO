@@ -25,6 +25,8 @@ export function TenantProvider({ children }) {
       .catch(() => setLoading(false))
   }, [])
 
+  console.log('[TenantContext] tenant:', tenant, 'loading:', loading)
+
   return (
     <TenantContext.Provider value={{ tenant, loading }}>
       {children}

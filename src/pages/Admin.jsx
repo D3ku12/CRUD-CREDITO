@@ -361,6 +361,8 @@ export default function Admin() {
     setConfirmDelete(null)
   }
 
+  console.log('[Admin] rendering', { lenders, tenants })
+
   if (!user) return null
 
   return (

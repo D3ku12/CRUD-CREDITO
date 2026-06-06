@@ -43,6 +43,8 @@ const LINKS = [
 ]
 
 export default function Navbar() {
+  console.log('[Navbar] rendering')
+
   return (
     <nav style={styles.nav}>
       <div style={styles.inner}>

@@ -273,6 +273,8 @@ export default function Dashboard() {
     }
   }
 
+  console.log('[Dashboard] rendering', { subscription })
+
   if (!user) return null
   const hasPlan = subscription?.plan && subscription?.estado === 'activo'
 

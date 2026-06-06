@@ -62,6 +62,8 @@ const styles = {
 }
 
 export default function Hero() {
+  console.log('[Hero] rendering')
+
   const scrollToPlans = () => {
     document.getElementById('planes')?.scrollIntoView({ behavior: 'smooth' })
   }

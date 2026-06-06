@@ -7,6 +7,7 @@ import Login from './pages/Login'
 import Landing from './pages/Landing'
 
 export default function App() {
+  console.log('[App] rendering')
   return (
     <BrowserRouter>
       <TenantProvider>

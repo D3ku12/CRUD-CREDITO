@@ -170,6 +170,8 @@ const styles = {
 }
 
 export default function Plans() {
+  console.log('[Plans] rendering')
+
   const navigate = useNavigate()
   const { isAuthenticated } = useAuth()
 
