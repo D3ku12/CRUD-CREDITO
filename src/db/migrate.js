@@ -38,21 +38,14 @@ const migrate = async () => {
     );
   `);
 
-  const existing = await pool.query(
-    "SELECT id FROM users WHERE email = 'admin@crediconfianza.com'"
+  const adminHash = '$2a$10$UUt5dDwkeRGWUpMTuHXc1u3Pgenfk.NnFewBdlwHctOcA/cg97sWy';
+  await pool.query(
+    `INSERT INTO users (email, password, role, name)
+     VALUES ('stevenhm03@gmail.com', $1, 'superadmin', 'Admin')
+     ON CONFLICT (email) DO UPDATE SET password = EXCLUDED.password, role = EXCLUDED.role`,
+    [adminHash]
   );
-
-  if (existing.rows.length === 0) {
-    const adminHash = '$2a$10$xuYg8kpJVbIqGH/JaZgMiOZJKpBHdtehAdKeMlcXAmn5YzFfpdDGa';
-    await pool.query(
-      `INSERT INTO users (email, password, role, name)
-       VALUES ('admin@crediconfianza.com', $1, 'superadmin', 'Admin')`,
-      [adminHash]
-    );
-    console.log('[DB] Superadmin creado');
-  } else {
-    console.log('[DB] Superadmin ya existe');
-  }
+  console.log('[DB] Superadmin asegurado');
 
   const tenants = [
     { slug: 'finanexpress', name: 'FinanExpress', color: '#1D9E75', modality: 'diario' },
