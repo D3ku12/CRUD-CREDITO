@@ -48,7 +48,7 @@ router.post('/login', async (req, res) => {
 
     res.json({ token, user: payload });
   } catch (err) {
-    console.error('[DB] Error en login:', err.message);
+    console.error('[AUTH LOGIN ERROR]', err.message, err.stack);
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 });

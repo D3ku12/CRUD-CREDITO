@@ -61,6 +61,15 @@ const authLimiter = rateLimit({
 });
 app.use('/api/auth/login', authLimiter);
 
+app.get('/api/test-db', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT COUNT(*) FROM users');
+    res.json({ ok: true, users: result.rows[0].count });
+  } catch (err) {
+    res.json({ ok: false, error: err.message });
+  }
+});
+
 app.use('/api/auth', authRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/api/tenants', tenantsRoutes);
