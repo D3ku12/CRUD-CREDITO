@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
+    "migrate": "node src/db/migrate.js",
     "build": "vite build",
     "start": "node src/index.js",
     "dev": "vite"
@@ -17,6 +18,9 @@
     "express": "^4.21.2",
     "jsonwebtoken": "^9.0.2",
     "nodemailer": "^8.0.10",
+    "pg": "^8.11.0",
+    "pg-hstore": "^2.3.4",
+    "validator": "^13.11.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.28.0"

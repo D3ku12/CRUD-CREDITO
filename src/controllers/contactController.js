@@ -1,8 +1,8 @@
 const nodemailer = require('nodemailer');
-const fs = require('fs');
-const path = require('path');
+const pool = require('../db/connection');
+const validator = require('validator');
 
-const LEADS_FILE = path.resolve(__dirname, '../../data/leads.json');
+const clean = (str) => validator.escape(String(str || '').trim().substring(0, 200));
 
 const VALID_MODALITIES = ['diario', 'semanal', 'mensual', 'varios'];
 
@@ -25,20 +25,12 @@ function validate(body) {
   return errors;
 }
 
-function saveLead(lead) {
-  const colombiaDate = new Date().toLocaleString('es-CO', { timeZone: 'America/Bogota' });
-  const record = { ...lead, timestamp: colombiaDate };
-
-  let leads = [];
-  try {
-    const raw = fs.readFileSync(LEADS_FILE, 'utf-8');
-    leads = JSON.parse(raw);
-  } catch {
-    leads = [];
-  }
-  leads.push(record);
-  fs.writeFileSync(LEADS_FILE, JSON.stringify(leads, null, 2), 'utf-8');
-  return record;
+async function saveLead(lead) {
+  await pool.query(
+    'INSERT INTO leads (business_name, owner_name, whatsapp, modality) VALUES ($1, $2, $3, $4)',
+    [lead.businessName, lead.ownerName, lead.whatsapp, lead.modality]
+  );
+  return lead;
 }
 
 async function sendEmail(lead) {
@@ -62,7 +54,6 @@ async function sendEmail(lead) {
       <p><b>Propietario:</b> ${lead.ownerName}</p>
       <p><b>WhatsApp:</b> ${lead.whatsapp}</p>
       <p><b>Modalidad:</b> ${lead.modality}</p>
-      <p><b>Fecha:</b> ${lead.timestamp}</p>
     `,
   });
 }
@@ -74,16 +65,21 @@ exports.create = async (req, res) => {
   }
 
   const lead = {
-    businessName: req.body.businessName,
-    ownerName: req.body.ownerName,
-    whatsapp: req.body.whatsapp,
-    modality: req.body.modality,
+    businessName: clean(req.body.businessName),
+    ownerName: clean(req.body.ownerName),
+    whatsapp: clean(req.body.whatsapp),
+    modality: clean(req.body.modality),
   };
 
-  const saved = saveLead(lead);
+  try {
+    await saveLead(lead);
+  } catch (err) {
+    console.error('[DB] Error al guardar lead:', err.message);
+    return res.status(500).json({ success: false, error: 'Error interno' });
+  }
 
   try {
-    await sendEmail(saved);
+    await sendEmail(lead);
   } catch {
     // Email failure should not block the response
   }

@@ -1,12 +1,10 @@
 const { Router } = require('express');
 const axios = require('axios');
 const crypto = require('crypto');
-const fs = require('fs');
-const path = require('path');
+const pool = require('../db/connection');
 const { requireAuth } = require('../middleware/auth');
 
 const router = Router();
-const USERS_FILE = path.resolve(__dirname, '../../data/users.json');
 
 const PLANS = {
   basico: { amount: 8900000, name: 'Básico' },
@@ -15,18 +13,6 @@ const PLANS = {
 };
 
 const WOMPI_API = process.env.WOMPI_API_URL || 'https://sandbox.wompi.co/v1';
-
-function readUsers() {
-  try {
-    return JSON.parse(fs.readFileSync(USERS_FILE, 'utf-8'));
-  } catch {
-    return [];
-  }
-}
-
-function writeUsers(users) {
-  fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2), 'utf-8');
-}
 
 router.post('/create', requireAuth, async (req, res) => {
   try {
@@ -69,7 +55,7 @@ router.post('/create', requireAuth, async (req, res) => {
   }
 });
 
-router.post('/webhook', (req, res) => {
+router.post('/webhook', async (req, res) => {
   const secret = process.env.WOMPI_EVENTS_SECRET;
   const signature = req.headers['x-event-signature'] || req.headers['x-signature'];
 
@@ -99,20 +85,19 @@ router.post('/webhook', (req, res) => {
     if (match) {
       const planId = match[1];
       const userId = match[2];
-      const users = readUsers();
-      const userIndex = users.findIndex((u) => u.id === userId);
+      const now = new Date();
+      const vencimiento = new Date(now);
+      vencimiento.setDate(vencimiento.getDate() + 30);
 
-      if (userIndex !== -1) {
-        const now = new Date();
-        const vencimiento = new Date(now);
-        vencimiento.setDate(vencimiento.getDate() + 30);
-
-        users[userIndex].planId = planId;
-        users[userIndex].plan = PLANS[planId]?.name || planId;
-        users[userIndex].estado = 'activo';
-        users[userIndex].fechaVencimiento = vencimiento.toISOString().split('T')[0];
-        users[userIndex].active = true;
-        writeUsers(users);
+      try {
+        await pool.query(
+          `UPDATE users
+           SET plan = $1, plan_status = 'activo', plan_expires_at = $2
+           WHERE id = $3`,
+          [PLANS[planId]?.name || planId, vencimiento, userId]
+        );
+      } catch (err) {
+        console.error('[DB] Error al actualizar plan tras webhook:', err.message);
       }
     }
   }
@@ -120,28 +105,35 @@ router.post('/webhook', (req, res) => {
   res.status(200).json({ received: true });
 });
 
-router.get('/status', requireAuth, (req, res) => {
-  const users = readUsers();
-  const user = users.find((u) => u.id === req.user.id);
+router.get('/status', requireAuth, async (req, res) => {
+  try {
+    const result = await pool.query(
+      'SELECT plan, plan_status, plan_expires_at FROM users WHERE id = $1',
+      [req.user.id]
+    );
+    const user = result.rows[0];
 
-  if (!user) {
-    return res.status(404).json({ error: 'Usuario no encontrado' });
+    if (!user) {
+      return res.status(404).json({ error: 'Usuario no encontrado' });
+    }
+
+    let diasRestantes = 0;
+    if (user.plan_expires_at) {
+      const hoy = new Date();
+      const venc = new Date(user.plan_expires_at);
+      diasRestantes = Math.max(0, Math.ceil((venc - hoy) / (1000 * 60 * 60 * 24)));
+    }
+
+    res.json({
+      plan: user.plan || null,
+      estado: user.plan_status || 'inactivo',
+      fechaVencimiento: user.plan_expires_at || null,
+      diasRestantes,
+    });
+  } catch (err) {
+    console.error('[DB] Error al obtener estado del plan:', err.message);
+    res.status(500).json({ error: 'Error interno' });
   }
-
-  let diasRestantes = 0;
-  if (user.fechaVencimiento) {
-    const hoy = new Date();
-    const venc = new Date(user.fechaVencimiento + 'T23:59:59');
-    diasRestantes = Math.max(0, Math.ceil((venc - hoy) / (1000 * 60 * 60 * 24)));
-  }
-
-  res.json({
-    plan: user.plan || null,
-    planId: user.planId || null,
-    estado: user.estado || (user.plan ? 'activo' : 'inactivo'),
-    fechaVencimiento: user.fechaVencimiento || null,
-    diasRestantes,
-  });
 });
 
 module.exports = router;

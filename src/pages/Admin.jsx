@@ -275,19 +275,16 @@ export default function Admin() {
     api('/api/tenants').then((r) => r.ok && r.json()).then(setTenants)
   }
 
-  useEffect(() => {
-    if (user?.role === 'superadmin') loadTenants()
-  }, [user])
+  function loadLenders() {
+    api('/api/admin/users').then((r) => r.ok && r.json()).then(setLenders)
+  }
 
   useEffect(() => {
-    let stored = []
-    try {
-      stored = JSON.parse(localStorage.getItem('cc_lenders') || '[]')
-    } catch {
-      stored = []
+    if (user?.role === 'superadmin') {
+      loadTenants()
+      loadLenders()
     }
-    setLenders(stored)
-  }, [])
+  }, [user])
 
   function slugify(text) {
     return text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
@@ -295,34 +292,26 @@ export default function Admin() {
 
   async function handleCreateLender(e) {
     e.preventDefault()
-    const newLender = {
-      id: String(Date.now()),
-      name: lenderForm.name,
-      email: lenderForm.email,
-      password: lenderForm.password,
-      plan: lenderForm.plan,
-      role: 'prestamista',
-      active: true,
-      createdAt: new Date().toISOString().split('T')[0],
-    }
-    const updated = [...lenders, newLender]
-    setLenders(updated)
-    localStorage.setItem('cc_lenders', JSON.stringify(updated))
-
+    setCreating(true)
+    await api('/api/admin/users', {
+      method: 'POST',
+      body: JSON.stringify({ name: lenderForm.name, email: lenderForm.email, password: lenderForm.password, plan: lenderForm.plan }),
+    })
     const slug = slugify(lenderForm.name)
     await api('/api/tenants', {
       method: 'POST',
       body: JSON.stringify({ slug, name: lenderForm.name, modality: lenderForm.modality, slogan: '', color: '#1D9E75' }),
     })
+    loadLenders()
     loadTenants()
+    setCreating(false)
     setShowLenderModal(false)
     setLenderForm({ name: '', email: '', password: '', plan: 'Básico', modality: 'Paga Diario' })
   }
 
-  function handleToggle(lender) {
-    const updated = lenders.map((l) => (l.id === lender.id ? { ...l, active: !l.active } : l))
-    setLenders(updated)
-    localStorage.setItem('cc_lenders', JSON.stringify(updated))
+  async function handleToggle(lender) {
+    await api(`/api/admin/users/${lender.id}/toggle`, { method: 'PUT' })
+    loadLenders()
   }
 
   function openEditTenant(t) {
@@ -400,11 +389,11 @@ export default function Admin() {
                     <td style={s.td}>{l.email}</td>
                     <td style={s.td}>{l.plan}</td>
                     <td style={s.td}>
-                      <span style={{ ...s.badge, background: l.active ? 'rgba(29,158,117,0.15)' : 'rgba(231,76,60,0.15)', color: l.active ? 'var(--primary)' : '#e74c3c' }}>
-                        {l.active ? 'Activo' : 'Inactivo'}
+                      <span style={{ ...s.badge, background: l.plan_status === 'activo' ? 'rgba(29,158,117,0.15)' : 'rgba(231,76,60,0.15)', color: l.plan_status === 'activo' ? 'var(--primary)' : '#e74c3c' }}>
+                        {l.plan_status === 'activo' ? 'Activo' : 'Inactivo'}
                       </span>
                     </td>
-                    <td style={s.td}>{l.createdAt}</td>
+                    <td style={s.td}>{l.created_at ? new Date(l.created_at).toLocaleDateString() : '-'}</td>
                     <td style={s.td}>
                       {l.name && (
                         <a style={s.link} href={`/?tenant=${slugify(l.name)}`} target="_blank" rel="noopener noreferrer">
@@ -413,8 +402,8 @@ export default function Admin() {
                       )}
                     </td>
                     <td style={s.td}>
-                      <button style={s.actionBtn(l.active)} onClick={() => handleToggle(l)}>
-                        {l.active ? 'Desactivar' : 'Activar'}
+                      <button style={s.actionBtn(l.plan_status === 'activo')} onClick={() => handleToggle(l)}>
+                        {l.plan_status === 'activo' ? 'Desactivar' : 'Activar'}
                       </button>
                     </td>
                   </tr>
