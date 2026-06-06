@@ -59,6 +59,14 @@ CREATE TABLE IF NOT EXISTS audit_log (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Migracion: renombrar password -> password_hash (BD existente)
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='users' AND column_name='password') THEN
+    ALTER TABLE users RENAME COLUMN password TO password_hash;
+  END IF;
+END $$;
+
 -- Migracion: asegurar columnas existentes en tablas ya creadas
 ALTER TABLE users ADD COLUMN IF NOT EXISTS password_hash VARCHAR(255) NOT NULL DEFAULT '';
 ALTER TABLE users ADD COLUMN IF NOT EXISTS full_name VARCHAR(255) NOT NULL DEFAULT '';
