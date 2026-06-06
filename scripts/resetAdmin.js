@@ -1,19 +1,12 @@
 const bcrypt = require('bcryptjs');
-const fs = require('fs');
-const path = require('path');
+const pool = require('../src/db/connection');
 
-const USERS_FILE = path.resolve(__dirname, '../data/users.json');
-const PASSWORD = 'Credi2025*';
-
-const hash = bcrypt.hashSync(PASSWORD, 10);
-
-const users = JSON.parse(fs.readFileSync(USERS_FILE, 'utf-8'));
-
-const admin = users.find((u) => u.id === '1');
-if (admin) {
-  admin.password = hash;
-}
-
-fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2), 'utf-8');
-
-console.log('✅ Password del admin reseteada a: Credi2025*');
+(async () => {
+  const hash = await bcrypt.hash('Credi2025*', 10);
+  await pool.query(
+    "UPDATE users SET password = $1 WHERE email = 'admin@crediconfianza.com'",
+    [hash]
+  );
+  console.log('✅ Password reseteada a: Credi2025*');
+  process.exit(0);
+})();
