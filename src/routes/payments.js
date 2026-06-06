@@ -108,7 +108,7 @@ router.post('/webhook', async (req, res) => {
 router.get('/status', requireAuth, async (req, res) => {
   try {
     const result = await pool.query(
-      'SELECT plan, plan_status, plan_expires_at FROM users WHERE id = $1',
+      'SELECT plan, plan_status, plan_expires_at, tenant_slug FROM users WHERE id = $1',
       [req.user.id]
     );
     const user = result.rows[0];
@@ -129,6 +129,7 @@ router.get('/status', requireAuth, async (req, res) => {
       estado: user.plan_status || 'inactivo',
       fechaVencimiento: user.plan_expires_at || null,
       diasRestantes,
+      tenantSlug: user.tenant_slug || null,
     });
   } catch (err) {
     console.error('[DB] Error al obtener estado del plan:', err.message);
