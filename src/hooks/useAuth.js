@@ -37,6 +37,7 @@ export default function useAuth() {
     user,
     loading,
     isAuthenticated: !!user,
+    role: user?.role || null,
     logout,
   }
 }

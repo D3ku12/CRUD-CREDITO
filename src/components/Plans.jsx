@@ -170,16 +170,14 @@ const styles = {
 }
 
 export default function Plans() {
-  console.log('[Plans] rendering')
-
   const navigate = useNavigate()
   const { isAuthenticated } = useAuth()
 
-  const handlePlanClick = () => {
+  const handlePlanClick = (planId) => {
     if (isAuthenticated) {
-      navigate('/dashboard')
+      navigate('/dashboard#suscripcion')
     } else {
-      navigate('/login')
+      navigate(`/register?plan=${planId}`)
     }
   }
 
@@ -207,7 +205,7 @@ export default function Plans() {
                   </li>
                 ))}
               </ul>
-              <button style={styles.btn(plan.featured)} onClick={handlePlanClick}>
+              <button style={styles.btn(plan.featured)} onClick={() => handlePlanClick(plan.name.toLowerCase())}>
                 Suscribirme
               </button>
             </div>

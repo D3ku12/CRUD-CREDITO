@@ -135,8 +135,6 @@ const styles = {
 }
 
 export default function HowItWorks() {
-  console.log('[HowItWorks] rendering')
-
   return (
     <section id="como-funciona" style={styles.section}>
       <div style={styles.container} data-reveal>
