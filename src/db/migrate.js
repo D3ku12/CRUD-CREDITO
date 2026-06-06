@@ -70,8 +70,8 @@ const migrate = async () => {
   }
   console.log('[DB] Tenants de ejemplo insertados');
 
+  await pool.end();
   console.log('[DB] Migración completada');
-  process.exit(0);
 };
 
 migrate().catch((err) => {
