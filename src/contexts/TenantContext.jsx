@@ -10,19 +10,33 @@ export function TenantProvider({ children }) {
     const params = new URLSearchParams(window.location.search)
     const slug = params.get('tenant')
 
-    if (!slug) {
+    if (!slug || slug.length < 2 || slug.length > 50 || !/^[a-z0-9-]+$/.test(slug)) {
       setLoading(false)
       return
     }
 
-    fetch(`/api/tenants/${slug}`)
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
-        if (!data || !data.name) return
+    ;(async () => {
+      try {
+        const res = await fetch(`/api/tenants/${slug}`)
+        if (!res.ok) {
+          setTenant(null)
+          setLoading(false)
+          return
+        }
+        const data = await res.json()
+        if (!data || !data.name) {
+          setTenant(null)
+          setLoading(false)
+          return
+        }
         setTenant(data)
         setLoading(false)
-      })
-      .catch(() => setLoading(false))
+      } catch (err) {
+        console.warn('[TenantContext] fetch failed:', err.message)
+        setTenant(null)
+        setLoading(false)
+      }
+    })()
   }, [])
 
   console.log('[TenantContext] tenant:', tenant, 'loading:', loading)
