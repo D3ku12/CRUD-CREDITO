@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from 'react'
 
 const COLORS = ['#1D9E75', '#185FA5', '#BA7517', '#993556', '#534AB7']
 const MODALIDADES = ['Paga Diario', 'Semanal', 'Microcrédito', 'Flex']
-const API = import.meta.env.VITE_API_URL || 'http://localhost:4000'
 
 const styles = {
   wrapper: {
@@ -117,7 +116,7 @@ export default function WhiteLabelDemo() {
     if (!nombre.trim()) return
     const timer = setTimeout(() => {
       const slug = nombre.toLowerCase().replace(/\s+/g, '-')
-      fetch(`${API}/api/tenants/${slug}`)
+      fetch(`/api/tenants/${slug}`)
         .then(res => {
           if (!res.ok) throw new Error()
           return res.json()

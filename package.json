@@ -1,14 +1,17 @@
 {
-  "name": "crediconfianza-frontend",
+  "name": "crediconfianza-landing",
   "version": "1.0.0",
-  "description": "Frontend for CrediConfianza landing page",
-  "type": "module",
+  "private": true,
   "scripts": {
-    "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "start": "node src/index.js",
+    "dev": "vite"
   },
   "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "nodemailer": "^6.9.16",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },

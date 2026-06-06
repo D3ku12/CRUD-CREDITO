@@ -1,7 +1,5 @@
 import { useState } from 'react'
 
-const API = import.meta.env.VITE_API_URL || 'http://localhost:4000'
-
 const styles = {
   section: {
     padding: '100px 24px',
@@ -85,7 +83,7 @@ export default function Contact() {
     const fd = new FormData(e.target)
     const data = Object.fromEntries(fd)
     try {
-      const res = await fetch(`${API}/api/contact`, {
+      const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),

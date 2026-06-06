@@ -1,8 +1,8 @@
 require('dotenv').config();
 
 const express = require('express');
-const cors = require('cors');
 const path = require('path');
+const fs = require('fs');
 
 const contactRoutes = require('./routes/contact');
 const tenantsRoutes = require('./routes/tenants');
@@ -10,21 +10,23 @@ const tenantsRoutes = require('./routes/tenants');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(cors());
 app.use(express.json());
 
 app.use('/api/contact', contactRoutes);
 app.use('/api/tenants', tenantsRoutes);
 
-const frontendDist = path.resolve(__dirname, '../../frontend/dist');
-app.use(express.static(frontendDist));
+const distPath = path.resolve(__dirname, '../dist');
+app.use(express.static(distPath));
+
 app.get('*', (_req, res) => {
-  const index = path.join(frontendDist, 'index.html');
-  if (require('fs').existsSync(index)) {
-    res.sendFile(index);
+  const indexPath = path.join(distPath, 'index.html');
+  if (fs.existsSync(indexPath)) {
+    res.sendFile(indexPath);
+  } else {
+    res.status(404).json({ error: 'Not found' });
   }
 });
 
 app.listen(PORT, () => {
-  console.log(`Servidor corriendo en puerto ${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });

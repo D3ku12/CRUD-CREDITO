@@ -1,0 +1,23 @@
+[
+  {
+    "slug": "finanexpress",
+    "name": "FinanExpress",
+    "color": "#1D9E75",
+    "modality": "Paga Diario",
+    "slogan": "Tu préstamo rápido y seguro"
+  },
+  {
+    "slug": "creditofacil",
+    "name": "CréditoFácil",
+    "color": "#185FA5",
+    "modality": "Semanal",
+    "slogan": "El crédito que necesitas, sin complicaciones"
+  },
+  {
+    "slug": "microya",
+    "name": "MicroYa",
+    "color": "#BA7517",
+    "modality": "Microcrédito",
+    "slogan": "Microcréditos al instante"
+  }
+]
